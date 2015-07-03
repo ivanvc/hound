@@ -23,7 +23,7 @@ class ActivationsController < ApplicationController
   end
 
   def activator
-    @activator ||= RepoActivator.new(repo: repo, github_token: github_token)
+    @activator ||= RepoActivator.new(repo: repo, github_token: github_token, builds_url: builds_url)
   end
 
   def repo

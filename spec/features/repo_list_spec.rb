@@ -88,7 +88,7 @@ feature "Repo list", js: true do
     user = create(:user)
     repo = create(:repo, private: false)
     repo.users << user
-    hook_url = "http://#{ENV["HOST"]}/builds"
+    hook_url = "http://#{ENV["HOST"]}:#{Capybara.current_session.server.port}/builds"
     stub_repo_request(repo.full_github_name, token)
     stub_add_collaborator_request(username, repo.full_github_name, token)
     stub_hook_creation_request(repo.full_github_name, hook_url, token)
@@ -111,7 +111,7 @@ feature "Repo list", js: true do
     user = create(:user)
     repo = create(:repo, private: false, full_github_name: "testing/repo")
     repo.users << user
-    hook_url = "http://#{ENV["HOST"]}/builds"
+    hook_url = "http://#{ENV["HOST"]}:#{Capybara.current_session.server.port}/builds"
     team_id = 4567 # from fixture
     token = "usergithubtoken"
     stub_repo_with_org_request(repo.full_github_name, token)

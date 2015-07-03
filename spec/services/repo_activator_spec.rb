@@ -69,7 +69,8 @@ describe RepoActivator do
         it "creates GitHub hook using secure build URL" do
           github = stub_github_api
           repo = build(:repo, name: "foo/bar")
-          activator = build_activator(repo: repo)
+          builds_url = "https://something.com"
+          activator = build_activator(repo: repo, builds_url: builds_url)
 
           with_https_enabled do
             activator.activate
@@ -77,7 +78,7 @@ describe RepoActivator do
 
           expect(github).to have_received(:create_hook).with(
             repo.full_github_name,
-            URI.join("https://#{ENV["HOST"]}", "builds").to_s
+            builds_url
           )
         end
       end
@@ -86,13 +87,14 @@ describe RepoActivator do
         it "creates GitHub hook using insecure build URL" do
           github = stub_github_api
           repo = build(:repo)
-          activator = build_activator(repo: repo)
+          builds_url = "https://something.com"
+          activator = build_activator(repo: repo, builds_url: builds_url)
 
           activator.activate
 
           expect(github).to have_received(:create_hook).with(
             repo.full_github_name,
-            URI.join("http://#{ENV["HOST"]}", "builds").to_s
+            builds_url
           )
         end
       end
@@ -226,11 +228,11 @@ describe RepoActivator do
     end
   end
 
-  def build_activator(token: "githubtoken", repo: build(:repo))
+  def build_activator(token: "githubtoken", repo: build(:repo), builds_url: nil)
     allow(RemoveHoundFromRepo).to receive(:run)
     allow(AddHoundToRepo).to receive(:run).and_return(true)
 
-    RepoActivator.new(github_token: token, repo: repo)
+    RepoActivator.new(github_token: token, repo: repo, builds_url: builds_url)
   end
 
   def stub_github_api

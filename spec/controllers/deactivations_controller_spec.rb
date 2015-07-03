@@ -16,7 +16,7 @@ describe DeactivationsController, "#create" do
       expect(response.body).to eq RepoSerializer.new(repo).to_json
       expect(activator).to have_received(:deactivate)
       expect(RepoActivator).to have_received(:new).
-        with(repo: repo, github_token: token)
+        with(repo: repo, github_token: token, builds_url: builds_url)
       expect(analytics).to have_tracked("Repo Deactivated").
         for_user(membership.user).
         with(
@@ -43,7 +43,7 @@ describe DeactivationsController, "#create" do
       expect(response.code).to eq "502"
       expect(activator).to have_received(:deactivate)
       expect(RepoActivator).to have_received(:new).
-        with(repo: repo, github_token: token)
+        with(repo: repo, github_token: token, builds_url: builds_url)
     end
   end
 

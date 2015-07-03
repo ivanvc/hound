@@ -1,9 +1,10 @@
 class RepoActivator
   attr_reader :errors
 
-  def initialize(github_token:, repo:)
+  def initialize(github_token:, repo:, builds_url:)
     @github_token = github_token
     @repo = repo
+    @builds_url = builds_url
     @errors = []
   end
 
@@ -17,7 +18,7 @@ class RepoActivator
 
   private
 
-  attr_reader :github_token, :repo
+  attr_reader :github_token, :repo, :builds_url
 
   def activate_repo
     change_repository_state_quietly do
@@ -67,18 +68,6 @@ class RepoActivator
   def delete_webhook
     github.remove_hook(repo.full_github_name, repo.hook_id) do
       repo.update(hook_id: nil)
-    end
-  end
-
-  def builds_url
-    URI.join("#{protocol}://#{ENV["HOST"]}", "builds").to_s
-  end
-
-  def protocol
-    if ENV.fetch("ENABLE_HTTPS") == "yes"
-      "https"
-    else
-      "http"
     end
   end
 

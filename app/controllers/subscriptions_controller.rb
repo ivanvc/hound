@@ -29,7 +29,7 @@ class SubscriptionsController < ApplicationController
   private
 
   def activator
-    RepoActivator.new(repo: repo, github_token: github_token)
+    RepoActivator.new(repo: repo, github_token: github_token, builds_url: builds_url)
   end
 
   def repo

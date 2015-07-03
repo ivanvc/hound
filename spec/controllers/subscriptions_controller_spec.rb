@@ -21,7 +21,7 @@ describe SubscriptionsController, "#create" do
 
       expect(activator).to have_received(:activate)
       expect(RepoActivator).to have_received(:new).
-        with(repo: repo, github_token: token)
+        with(repo: repo, github_token: token, builds_url: builds_url)
       expect(RepoSubscriber).to have_received(:subscribe).
         with(repo, membership.user, "cardtoken")
       expect(analytics).to have_tracked("Repo Activated").
@@ -119,7 +119,7 @@ describe SubscriptionsController, "#destroy" do
 
       expect(activator).to have_received(:deactivate)
       expect(RepoActivator).to have_received(:new).
-        with(repo: repo, github_token: token)
+        with(repo: repo, github_token: token, builds_url: builds_url)
       expect(RepoSubscriber).to have_received(:unsubscribe).
         with(repo, subscribed_user)
       expect(analytics).to have_tracked("Repo Deactivated").
