@@ -44,6 +44,8 @@ class StyleChecker
       StyleGuide::Haml
     when /.+\.scss\z/
       StyleGuide::Scss
+    when /.+\.jsx\z/
+      StyleGuide::EcmaScript
     else
       StyleGuide::Unsupported
     end
