@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Set up Ruby
-bundle install
+bundle install --without=test
 
 # Add binstubs to PATH via export PATH=".git/safe/../../bin:$PATH" in ~/.zshenv
 mkdir -p .git/safe
@@ -9,22 +9,9 @@ mkdir -p .git/safe
 # Set up database
 bundle exec rake db:setup
 
-# Set up deploys
-git remote add staging git@heroku.com:hound-staging.git
-heroku join --app hound-staging
-
-git remote add production git@heroku.com:hound-production.git
-heroku join --app hound-production
-
 # Set a default port for Foreman to run the server
 if ! grep -qs 'port' .foreman; then
   printf 'port: 5000\n' >> .foreman
-fi
-
-# Stripe credentials
-if ! grep -qs 'STRIPE' .env.local; then
-  heroku config:get STRIPE_API_KEY --remote staging --shell >> .env.local
-  heroku config:get STRIPE_PUBLISHABLE_KEY --remote staging --shell >> .env.local
 fi
 
 # GitHub
