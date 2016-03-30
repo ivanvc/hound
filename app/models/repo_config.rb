@@ -5,6 +5,7 @@ class RepoConfig
   FILE_TYPES = {
     "ruby" => "yaml",
     "javascript" => "json",
+    "ecmascript" => "json",
     "coffeescript" => "json",
     "scss" => "yaml",
     "haml" => "yaml"

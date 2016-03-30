@@ -42,8 +42,8 @@ class StyleChecker
       StyleGuide::JavaScript
     when /.+\.haml\z/
       StyleGuide::Haml
-    when /.+\.scss\z/
-      StyleGuide::Scss
+    #when /.+\.scss\z/
+      #StyleGuide::Scss
     when /.+\.jsx\z/
       StyleGuide::EcmaScript
     else

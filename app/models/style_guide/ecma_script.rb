@@ -6,13 +6,13 @@ module StyleGuide
       file = temp_file(commit_file)
       config_file = temp_config_file
       FileReview.new(filename: commit_file.filename) do |file_review|
-        output = `eslint #{file.path} -c #{config_file.path} -f compact`
+        output = `/usr/src/app/node_modules/.bin/eslint #{file.path} -c #{config_file.path} -f compact`
         puts output.inspect
         output.each_line do |violation|
           next unless violation[file.path]
-          puts 'building'
           line = commit_file.line_at(violation[/line (\d+)/, 1].to_i)
           reason = violation[/,\s([^,]+)$/, 1]
+          puts "#{line}: #{reason}"
           file_review.build_violation(line, reason)
         end
         file_review.complete

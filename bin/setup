@@ -1,19 +1,15 @@
 #!/usr/bin/env sh
 
-# Set up Ruby
-bundle install --without=test
-
 # Add binstubs to PATH via export PATH=".git/safe/../../bin:$PATH" in ~/.zshenv
 mkdir -p .git/safe
 
 # Set up database
-bundle exec rake db:setup
+bundle exec rake db:create
+bundle exec rake db:migrate
 
 # Set a default port for Foreman to run the server
 if ! grep -qs 'port' .foreman; then
   printf 'port: 5000\n' >> .foreman
 fi
 
-# GitHub
-printf 'Generate a token at https://github.com/settings/tokens/new\n'
-printf 'Select user:email and repo scopes\n'
+bundle exec foreman start

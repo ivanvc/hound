@@ -1,41 +1,42 @@
-FROM ruby:wheezy
+FROM ruby:2.2.2
 MAINTAINER Ivan Valdes <ivan@vald.es>
 
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN groupadd -r redis && useradd -r -g redis redis
-
+# Hound
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-  && rm -rf /var/lib/apt/lists/*
+    # For assets compilation
+    nodejs \
+    # Capybara-webkit deps
+    dbus-1-dbg \
+    libqt5webkit5-dev \
+    qt5-default \
+    xvfb \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  && dbus-uuidgen > /etc/machine-id
 
-# grab gosu for easy step-down from root
-RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
-RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
-  && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
-  && gpg --verify /usr/local/bin/gosu.asc \
-  && rm /usr/local/bin/gosu.asc \
-  && chmod +x /usr/local/bin/gosu
+RUN gpg --keyserver pool.sks-keyservers.net --recv-keys 7937DFD2AB06298B2293C3187D33FF9D0246406D 114F43EE0176B71C7BC219DD50A3051F888C628D
 
-ENV REDIS_VERSION 2.8.21
-ENV REDIS_DOWNLOAD_URL http://download.redis.io/releases/redis-2.8.21.tar.gz
-ENV REDIS_DOWNLOAD_SHA1 52f619d3d301fc7ae498a1d4cb4d44ecebc5b0f9
+ENV NODE_VERSION 0.10.40
+ENV NPM_VERSION 2.11.3
 
-# for redis-sentinel see: http://redis.io/topics/sentinel
-RUN buildDeps='gcc libc6-dev make' \
-  && set -x \
-  && apt-get update && apt-get install -y $buildDeps --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /usr/src/redis \
-  && curl -sSL "$REDIS_DOWNLOAD_URL" -o redis.tar.gz \
-  && echo "$REDIS_DOWNLOAD_SHA1 *redis.tar.gz" | sha1sum -c - \
-  && tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 \
-  && rm redis.tar.gz \
-  && make -C /usr/src/redis \
-  && make -C /usr/src/redis install \
-  && rm -r /usr/src/redis \
-  && apt-get purge -y --auto-remove $buildDeps
+RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
+	&& curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+	&& gpg --verify SHASUMS256.txt.asc \
+	&& grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
+	&& tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
+	&& rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc \
+	&& npm install -g npm@"$NPM_VERSION" \
+	&& npm cache clear
 
-RUN mkdir /data && chown redis:redis /data
-VOLUME /data
-WORKDIR /data
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY Gemfile /usr/src/app/
+COPY Gemfile.lock /usr/src/app/
+RUN bundle install
+COPY package.json /usr/src/app/
+RUN npm install
+
+COPY . /usr/src/app
+RUN mv /usr/src/app/.env.local /usr/src/app/.env
+
+CMD /usr/src/app/bin/setup
